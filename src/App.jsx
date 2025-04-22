@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AlertCircle, Users, Calculator, Play, RefreshCw } from 'lucide-react';
 
+// Styles remain the same as in the previous implementation
 const styles = {
   container: {
     minHeight: '100vh',
@@ -34,11 +35,6 @@ const styles = {
     gap: '1.5rem',
     marginBottom: '1.5rem'
   },
-  gridResponsive: {
-    '@media (max-width: 768px)': {
-      gridTemplateColumns: '1fr'
-    }
-  },
   label: {
     display: 'flex',
     alignItems: 'center',
@@ -71,14 +67,8 @@ const styles = {
   blueButton: {
     backgroundColor: '#2563eb',
   },
-  blueButtonHover: {
-    backgroundColor: '#1d4ed8',
-  },
   grayButton: {
     backgroundColor: '#4b5563',
-  },
-  grayButtonHover: {
-    backgroundColor: '#374151',
   },
   resultCard: {
     padding: '1rem',
@@ -106,111 +96,129 @@ const styles = {
   }
 };
 
-const BirthdayParadoxSimulator = () => {
-  const [groupSize, setGroupSize] = useState(23);
-  const [simulations, setSimulations] = useState(1000);
-  const [results, setResults] = useState(null);
-  const [isSimulating, setIsSimulating] = useState(false);
-  const [simulationDetails, setSimulationDetails] = useState(null);
-  const [showAllBirthdays, setShowAllBirthdays] = useState(false);
-  const [showYear, setShowYear] = useState(false);
-
-  const runSimulations = () => {
-    setIsSimulating(true);
-
-    let matchCount = 0;
-    let exactMatchCount = 0; // Nouveau compteur pour les correspondances exactes
-    const detailedResults = [];
-
-    for (let sim = 0; sim < simulations; sim++) {
-      const birthdays = new Set();
-      const exactBirthdays = new Set(); // Set pour les anniversaires avec année
-      const birthdaysList = [];
-      let foundMatch = false;
-      let foundExactMatch = false;
-      let matchingBirthday = null;
-      let exactMatchingBirthday = null;
-
-      // Générer des anniversaires aléatoires avec années
-      const birthdaysWithYears = [];
-      for (let person = 0; person < groupSize; person++) {
-        const birthday = Math.floor(Math.random() * 365);
-        const year = 1950 + Math.floor(Math.random() * 75); // Années aléatoires entre 1950 et 2025
-        const exactBirthday = `${birthday}-${year}`; // Format: "jour-année"
-
-        // Vérifier correspondance de jour uniquement
-        if (birthdays.has(birthday)) {
-          foundMatch = true;
-          matchingBirthday = birthday;
-          matchCount++;
-        }
-
-        // Vérifier correspondance exacte (jour + année)
-        if (exactBirthdays.has(exactBirthday)) {
-          foundExactMatch = true;
-          exactMatchingBirthday = { day: birthday, year };
-          exactMatchCount++;
-        }
-
-        birthdays.add(birthday);
-        exactBirthdays.add(exactBirthday);
-        birthdaysList.push(birthday);
-        birthdaysWithYears.push({ day: birthday, year });
-      }
-
-      // Sauvegarder quelques simulations pour l'affichage
-      if (sim < 10) {
-        detailedResults.push({
-          simulation: sim + 1,
-          foundMatch: foundMatch,
-          foundExactMatch: foundExactMatch,
-          birthdays: birthdaysList,
-          matchingBirthday: matchingBirthday,
-          exactMatchingBirthday: exactMatchingBirthday,
-          dates: birthdaysList.map(day => convertToDate(day)),
-          birthdaysWithYears: birthdaysWithYears
-        });
-      }
-    }
-
-    const probability = (matchCount / simulations) * 100;
-    const exactProbability = (exactMatchCount / simulations) * 100;
-
-    setResults({
-      matchCount,
-      exactMatchCount,
-      probability,
-      exactProbability,
-      expected: calculateExpectedProbability(groupSize)
-    });
-
-    setSimulationDetails(detailedResults);
-    setIsSimulating(false);
-  };
-
-  // Convertir le jour de l'année en date
-  const convertToDate = (dayOfYear) => {
-    const date = new Date(2024, 0, 1); // Utiliser une année bissextile pour gérer tous les jours possibles
-    date.setDate(date.getDate() + dayOfYear);
-    return date.toLocaleString('fr-FR', { day: 'numeric', month: 'long' });
-  };
-
-  // Calcul de la probabilité théorique
-  const calculateExpectedProbability = (n) => {
+// Birthday Paradox Simulator Logic
+class BirthdayParadoxSimulator {
+  /**
+   * Calculate theoretical probability of birthday match
+   * @param {number} n - Number of people in the group
+   * @returns {number} Probability percentage
+   */
+  static calculateTheoreticalProbability(n) {
+    if (n <= 0) return 0;
     if (n >= 365) return 100;
 
-    let probability = 1;
+    let probability = 1.0;
     for (let i = 0; i < n; i++) {
       probability *= (365 - i) / 365;
     }
 
     return (1 - probability) * 100;
+  }
+
+  /**
+   * Run simulations with more robust match detection
+   * @param {number} groupSize - Number of people in the group
+   * @param {number} simulationCount - Number of simulations
+   * @returns {Object} Simulation results
+   */
+  static runSimulations(groupSize, simulationCount) {
+    let dayMatchSimulations = 0;
+    let exactMatchSimulations = 0;
+    const detailedResults = [];
+
+    for (let sim = 0; sim < simulationCount; sim++) {
+      const birthdays = new Map(); // Use Map to track first occurrence
+      const exactBirthdays = new Map();
+      let dayMatchFound = false;
+      let exactMatchFound = false;
+      const simulationBirthdays = [];
+
+      for (let person = 0; person < groupSize; person++) {
+        const day = Math.floor(Math.random() * 365);
+        const year = 1950 + Math.floor(Math.random() * 75);
+        const exactBirthday = `${day}-${year}`;
+
+        // Check day-only match
+        if (birthdays.has(day) && !dayMatchFound) {
+          dayMatchFound = true;
+          dayMatchSimulations++;
+        }
+
+        // Check exact match
+        if (exactBirthdays.has(exactBirthday) && !exactMatchFound) {
+          exactMatchFound = true;
+          exactMatchSimulations++;
+        }
+
+        // Store first occurrence
+        if (!birthdays.has(day)) {
+          birthdays.set(day, {day, year});
+        }
+        if (!exactBirthdays.has(exactBirthday)) {
+          exactBirthdays.set(exactBirthday, {day, year});
+        }
+
+        simulationBirthdays.push({day, year});
+      }
+
+      // Store details for first 10 simulations
+      if (sim < 10) {
+        detailedResults.push({
+          simulation: sim + 1,
+          foundMatch: dayMatchFound,
+          foundExactMatch: exactMatchFound,
+          birthdays: simulationBirthdays
+        });
+      }
+    }
+
+    // Calculate probabilities
+    const dayMatchProbability = (dayMatchSimulations / simulationCount) * 100;
+    const exactMatchProbability = (exactMatchSimulations / simulationCount) * 100;
+    const theoreticalProbability = this.calculateTheoreticalProbability(groupSize);
+
+    return {
+      matchCount: dayMatchSimulations,
+      exactMatchCount: exactMatchSimulations,
+      probability: dayMatchProbability,
+      exactProbability: exactMatchProbability,
+      expected: theoreticalProbability,
+      detailedResults
+    };
+  }
+}
+
+// Convert day of year to a readable date
+const convertToDate = (dayOfYear) => {
+  const date = new Date(2024, 0, 1); // Use a leap year to handle all possible days
+  date.setDate(date.getDate() + dayOfYear);
+  return date.toLocaleString('fr-FR', { day: 'numeric', month: 'long' });
+};
+
+const BirthdayParadoxApp = () => {
+  const [groupSize, setGroupSize] = useState(23);
+  const [simulations, setSimulations] = useState(10000);
+  const [results, setResults] = useState(null);
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [showYear, setShowYear] = useState(false);
+
+  const runSimulations = () => {
+    setIsSimulating(true);
+
+    // Use setTimeout to allow UI to update before running complex simulation
+    setTimeout(() => {
+      const simulationResults = BirthdayParadoxSimulator.runSimulations(
+        groupSize,
+        simulations
+      );
+
+      setResults(simulationResults);
+      setIsSimulating(false);
+    }, 50);
   };
 
   const reset = () => {
     setResults(null);
-    setSimulationDetails(null);
-    setShowAllBirthdays(false);
     setShowYear(false);
   };
 
@@ -343,7 +351,7 @@ const BirthdayParadoxSimulator = () => {
                 </label>
               </div>
               <div style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
-                {simulationDetails?.map((detail, index) => (
+                {results.detailedResults.map((detail, index) => (
                   <div key={index} style={{
                     backgroundColor: 'white',
                     padding: '1rem',
@@ -378,7 +386,7 @@ const BirthdayParadoxSimulator = () => {
                           borderRadius: '9999px',
                           fontSize: '0.75rem'
                         }}>
-                          Exact Match!
+                          Correspondance exacte
                         </span>
                       )}
                     </div>
@@ -389,77 +397,80 @@ const BirthdayParadoxSimulator = () => {
                       gap: '0.5rem',
                       fontSize: '0.875rem'
                     }}>
-                      {detail.dates.map((date, dateIndex) => {
-                        const currentBirthday = detail.birthdays[dateIndex];
-                        const currentYear = detail.birthdaysWithYears[dateIndex]?.year;
-                        const exactMatch = detail.exactMatchingBirthday?.day === currentBirthday &&
-                                         detail.exactMatchingBirthday?.year === currentYear;
+                      {detail.birthdays.map((birthday, dateIndex) => {
+                        const date = convertToDate(birthday.day);
+                        const currentBirthday = birthday.day;
+                        const currentYear = birthday.year;
 
                         return (
                           <span
                             key={dateIndex}
                             style={{
-                              backgroundColor: exactMatch
+                              backgroundColor: detail.foundMatch && detail.birthdays.filter(b => b.day === currentBirthday).length > 1
+                              ? '#fee2e2'  // Red for day match
+                              : detail.foundExactMatch && detail.birthdays.some(b => b.day === currentBirthday && b.year === currentYear)
                                 ? '#f3e8ff'  // Purple for exact match
-                                : detail.matchingBirthday === currentBirthday
-                                  ? '#fee2e2'  // Red for day match
-                                  : '#f3f4f6', // Gray for no match
-                              color: exactMatch
+                                : '#f3f4f6', // Gray for no match
+                            color: detail.birthdays.filter(b => b.day === currentBirthday).length > 1
+                              ? '#dc2626'
+                              : detail.foundExactMatch && detail.birthdays.some(b => b.day === currentBirthday && b.year === currentYear)
                                 ? '#7c3aed'
-                                : detail.matchingBirthday === currentBirthday
-                                  ? '#dc2626'
-                                  : '#4b5563',
-                              padding: '0.25rem 0.5rem',
-                              borderRadius: '0.375rem',
-                              border: exactMatch
+                                : '#4b5563',
+                            padding: '0.25rem 0.5rem',
+                            borderRadius: '0.375rem',
+                            border: detail.birthdays.filter(b => b.day === currentBirthday).length > 1
+                              ? '1px solid #fca5a5'
+                              : detail.foundExactMatch && detail.birthdays.some(b => b.day === currentBirthday && b.year === currentYear)
                                 ? '1px solid #c084fc'
-                                : detail.matchingBirthday === currentBirthday
-                                  ? '1px solid #fca5a5'
-                                  : '1px solid #e5e7eb'
-                            }}
-                          >
-                            {date}
-                            {showYear && currentYear && (
-                              <span style={{
-                                marginLeft: '0.25rem',
-                                color: exactMatch ? '#7c3aed' : '#9ca3af',
-                                fontSize: '0.75rem',
-                                fontWeight: exactMatch ? '600' : 'normal'
-                              }}>
-                                ({currentYear})
-                              </span>
-                            )}
-                          </span>
-                        );
-                      })}
-                    </div>
+                                : '1px solid #e5e7eb'
+                          }}
+                        >
+                          {date}
+                          {showYear && (
+                            <span style={{
+                              marginLeft: '0.25rem',
+                              color: detail.foundExactMatch && detail.birthdays.some(b => b.day === currentBirthday && b.year === currentYear)
+                                ? '#7c3aed'
+                                : '#9ca3af',
+                              fontSize: '0.75rem',
+                              fontWeight: detail.foundExactMatch && detail.birthdays.some(b => b.day === currentBirthday && b.year === currentYear)
+                                ? '600'
+                                : 'normal'
+                            }}>
+                              ({currentYear})
+                            </span>
+                          )}
+                        </span>
+                      );
+                    })}
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        <div style={styles.alertBox}>
-          <AlertCircle size={20} style={{color: '#2563eb', marginRight: '0.5rem', flexShrink: 0}} />
-          <div style={{color: '#1d4ed8'}}>
-            <h3 style={{fontWeight: '600'}}>À propos du paradoxe</h3>
-            <p style={{marginTop: '0.25rem'}}>
-              Le paradoxe des anniversaires démontre que la probabilité que deux personnes
-              partagent le même anniversaire augmente rapidement avec la taille du groupe.
-              Avec seulement 23 personnes, cette probabilité atteint 50%, ce qui est
-              contre-intuitif pour beaucoup.
-              {showYear && (
-                <span style={{display: 'block', marginTop: '0.5rem', fontStyle: 'italic'}}>
-                  Note : L'année de naissance n'a aucun impact sur le paradoxe, seuls les jours comptent !
-                </span>
-              )}
-            </p>
-          </div>
+      <div style={styles.alertBox}>
+        <AlertCircle size={20} style={{color: '#2563eb', marginRight: '0.5rem', flexShrink: 0}} />
+        <div style={{color: '#1d4ed8'}}>
+          <h3 style={{fontWeight: '600'}}>À propos du paradoxe</h3>
+          <p style={{marginTop: '0.25rem'}}>
+            Le paradoxe des anniversaires démontre que la probabilité que deux personnes
+            partagent le même anniversaire augmente rapidement avec la taille du groupe.
+            Avec seulement 23 personnes, cette probabilité atteint 50%, ce qui est
+            contre-intuitif pour beaucoup.
+            {showYear && (
+              <span style={{display: 'block', marginTop: '0.5rem', fontStyle: 'italic'}}>
+                Note : L'année de naissance n'a aucun impact sur le paradoxe, seuls les jours comptent !
+              </span>
+            )}
+          </p>
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 };
 
-export default BirthdayParadoxSimulator;
+export default BirthdayParadoxApp;
