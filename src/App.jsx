@@ -119,29 +119,41 @@ const BirthdayParadoxSimulator = () => {
     setIsSimulating(true);
 
     let matchCount = 0;
+    let exactMatchCount = 0; // Nouveau compteur pour les correspondances exactes
     const detailedResults = [];
 
     for (let sim = 0; sim < simulations; sim++) {
       const birthdays = new Set();
+      const exactBirthdays = new Set(); // Set pour les anniversaires avec année
       const birthdaysList = [];
       let foundMatch = false;
+      let foundExactMatch = false;
       let matchingBirthday = null;
+      let exactMatchingBirthday = null;
 
       // Générer des anniversaires aléatoires avec années
       const birthdaysWithYears = [];
       for (let person = 0; person < groupSize; person++) {
         const birthday = Math.floor(Math.random() * 365);
         const year = 1950 + Math.floor(Math.random() * 75); // Années aléatoires entre 1950 et 2025
+        const exactBirthday = `${birthday}-${year}`; // Format: "jour-année"
 
+        // Vérifier correspondance de jour uniquement
         if (birthdays.has(birthday)) {
           foundMatch = true;
           matchingBirthday = birthday;
-          birthdaysList.push(birthday);
-          birthdaysWithYears.push({ day: birthday, year });
           matchCount++;
-          break;
         }
+
+        // Vérifier correspondance exacte (jour + année)
+        if (exactBirthdays.has(exactBirthday)) {
+          foundExactMatch = true;
+          exactMatchingBirthday = { day: birthday, year };
+          exactMatchCount++;
+        }
+
         birthdays.add(birthday);
+        exactBirthdays.add(exactBirthday);
         birthdaysList.push(birthday);
         birthdaysWithYears.push({ day: birthday, year });
       }
@@ -151,8 +163,10 @@ const BirthdayParadoxSimulator = () => {
         detailedResults.push({
           simulation: sim + 1,
           foundMatch: foundMatch,
+          foundExactMatch: foundExactMatch,
           birthdays: birthdaysList,
           matchingBirthday: matchingBirthday,
+          exactMatchingBirthday: exactMatchingBirthday,
           dates: birthdaysList.map(day => convertToDate(day)),
           birthdaysWithYears: birthdaysWithYears
         });
@@ -160,10 +174,13 @@ const BirthdayParadoxSimulator = () => {
     }
 
     const probability = (matchCount / simulations) * 100;
+    const exactProbability = (exactMatchCount / simulations) * 100;
 
     setResults({
       matchCount,
+      exactMatchCount,
       probability,
+      exactProbability,
       expected: calculateExpectedProbability(groupSize)
     });
 
@@ -274,12 +291,13 @@ const BirthdayParadoxSimulator = () => {
           <div style={styles.card}>
             <h2 style={{...styles.title, fontSize: '1.25rem', marginBottom: '1rem'}}>Résultats</h2>
 
-            <div style={{...styles.grid, gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '1.5rem'}}>
+            <div style={{...styles.grid, gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '1.5rem'}}>
               <div style={{...styles.resultCard, ...styles.blueCard}}>
                 <div style={{...styles.resultText, color: '#2563eb'}}>
                   {results.probability.toFixed(1)}%
                 </div>
                 <div style={{color: '#1e40af'}}>Probabilité empirique</div>
+                <div style={{fontSize: '0.75rem', color: '#1e40af'}}>(jour seulement)</div>
               </div>
 
               <div style={{...styles.resultCard, ...styles.greenCard}}>
@@ -287,13 +305,23 @@ const BirthdayParadoxSimulator = () => {
                   {results.expected.toFixed(1)}%
                 </div>
                 <div style={{color: '#065f46'}}>Probabilité théorique</div>
+                <div style={{fontSize: '0.75rem', color: '#065f46'}}>(jour seulement)</div>
               </div>
 
               <div style={{...styles.resultCard, ...styles.purpleCard}}>
                 <div style={{...styles.resultText, color: '#7c3aed'}}>
-                  {results.matchCount} / {simulations}
+                  {results.exactProbability.toFixed(1)}%
                 </div>
-                <div style={{color: '#5b21b6'}}>Correspondances trouvées</div>
+                <div style={{color: '#5b21b6'}}>Probabilité exacte</div>
+                <div style={{fontSize: '0.75rem', color: '#5b21b6'}}>(jour + année)</div>
+              </div>
+
+              <div style={{...styles.resultCard, backgroundColor: '#fef2f2'}}>
+                <div style={{...styles.resultText, color: '#dc2626', fontSize: '1rem'}}>
+                  {results.matchCount} / {results.exactMatchCount}
+                </div>
+                <div style={{color: '#991b1b'}}>Correspondances jour</div>
+                <div style={{color: '#991b1b'}}>vs jour+année</div>
               </div>
             </div>
 
@@ -325,7 +353,10 @@ const BirthdayParadoxSimulator = () => {
                     <div style={{
                       fontWeight: '600',
                       color: detail.foundMatch ? '#059669' : '#374151',
-                      marginBottom: '0.5rem'
+                      marginBottom: '0.5rem',
+                      display: 'flex',
+                      gap: '0.5rem',
+                      alignItems: 'center'
                     }}>
                       Simulation {detail.simulation}
                       {detail.foundMatch && (
@@ -334,10 +365,20 @@ const BirthdayParadoxSimulator = () => {
                           color: '#16a34a',
                           padding: '0.125rem 0.5rem',
                           borderRadius: '9999px',
-                          fontSize: '0.75rem',
-                          marginLeft: '0.5rem'
+                          fontSize: '0.75rem'
                         }}>
-                          Correspondance trouvée!
+                          Jour identique
+                        </span>
+                      )}
+                      {detail.foundExactMatch && (
+                        <span style={{
+                          backgroundColor: '#f3e8ff',
+                          color: '#7c3aed',
+                          padding: '0.125rem 0.5rem',
+                          borderRadius: '9999px',
+                          fontSize: '0.75rem'
+                        }}>
+                          Exact Match!
                         </span>
                       )}
                     </div>
@@ -348,35 +389,49 @@ const BirthdayParadoxSimulator = () => {
                       gap: '0.5rem',
                       fontSize: '0.875rem'
                     }}>
-                      {detail.dates.map((date, dateIndex) => (
-                        <span
-                          key={dateIndex}
-                          style={{
-                            backgroundColor: detail.matchingBirthday === detail.birthdays[dateIndex]
-                              ? '#fee2e2'
-                              : '#f3f4f6',
-                            color: detail.matchingBirthday === detail.birthdays[dateIndex]
-                              ? '#dc2626'
-                              : '#4b5563',
-                            padding: '0.25rem 0.5rem',
-                            borderRadius: '0.375rem',
-                            border: detail.matchingBirthday === detail.birthdays[dateIndex]
-                              ? '1px solid #fca5a5'
-                              : '1px solid #e5e7eb'
-                          }}
-                        >
-                          {date}
-                          {showYear && detail.birthdaysWithYears[dateIndex] && (
-                            <span style={{
-                              marginLeft: '0.25rem',
-                              color: '#9ca3af',
-                              fontSize: '0.75rem'
-                            }}>
-                              ({detail.birthdaysWithYears[dateIndex].year})
-                            </span>
-                          )}
-                        </span>
-                      ))}
+                      {detail.dates.map((date, dateIndex) => {
+                        const currentBirthday = detail.birthdays[dateIndex];
+                        const currentYear = detail.birthdaysWithYears[dateIndex]?.year;
+                        const exactMatch = detail.exactMatchingBirthday?.day === currentBirthday &&
+                                         detail.exactMatchingBirthday?.year === currentYear;
+
+                        return (
+                          <span
+                            key={dateIndex}
+                            style={{
+                              backgroundColor: exactMatch
+                                ? '#f3e8ff'  // Purple for exact match
+                                : detail.matchingBirthday === currentBirthday
+                                  ? '#fee2e2'  // Red for day match
+                                  : '#f3f4f6', // Gray for no match
+                              color: exactMatch
+                                ? '#7c3aed'
+                                : detail.matchingBirthday === currentBirthday
+                                  ? '#dc2626'
+                                  : '#4b5563',
+                              padding: '0.25rem 0.5rem',
+                              borderRadius: '0.375rem',
+                              border: exactMatch
+                                ? '1px solid #c084fc'
+                                : detail.matchingBirthday === currentBirthday
+                                  ? '1px solid #fca5a5'
+                                  : '1px solid #e5e7eb'
+                            }}
+                          >
+                            {date}
+                            {showYear && currentYear && (
+                              <span style={{
+                                marginLeft: '0.25rem',
+                                color: exactMatch ? '#7c3aed' : '#9ca3af',
+                                fontSize: '0.75rem',
+                                fontWeight: exactMatch ? '600' : 'normal'
+                              }}>
+                                ({currentYear})
+                              </span>
+                            )}
+                          </span>
+                        );
+                      })}
                     </div>
                   </div>
                 ))}
