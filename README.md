@@ -1,30 +1,107 @@
 # Birthday Paradox Simulator
 
-An interactive React application that demonstrates the famous Birthday Paradox - the counterintuitive probability theory that in a group of just 23 people, there's a 50% chance that two will share the same birthday.
+An interactive React application that demonstrates the famous Birthday Paradox. It shows both the classic paradox (matching days only) and the exact birthday match (day + year) probability comparison.
 
 ## Demo
 
-The application allows users to:
-- Set the group size and number of simulations
-- Run interactive simulations to calculate probabilities
-- View detailed results with both empirical and theoretical probabilities
-- See the actual birthdays generated in each simulation
-- Toggle year display to demonstrate that only days matter, not birth years
+[Live Demo](https://birthday-paradox.onrender.com/)
 
 ## Features
 
-- **Interactive simulation**: Adjust group size and simulation count
-- **Real-time results**: Compare empirical vs theoretical probabilities
-- **Detailed visualization**: See specific dates with matching birthdays highlighted
-- **Year toggle**: Demonstrate that birth years don't affect the paradox
-- **Responsive design**: Works on desktop and mobile devices
-- **Clear highlighting**: Matching birthdays are visually highlighted in red
+- **Interactive simulation** with adjustable group size and simulation count
+- **Classic birthday paradox** (matching days only)
+- **Exact birthday matching** (day + year) comparison
+- **Visual representation** of birthdays with color-coded matches
+- **Real-time probability calculations**
+- **Toggle year display** to understand the difference between day-only and exact matches
 
-## Tech Stack
+## Mathematical Background
 
-- React 19.1.0
-- Lucide React for icons
-- Native CSS-in-JS styling
+### Classic Birthday Paradox
+
+The birthday paradox calculates the probability that at least two people in a group share the same birthday (day and month only).
+
+#### Theoretical Probability Calculation
+
+The probability is calculated by finding the complement: the probability that all birthdays are different.
+
+```math
+P(at least one shared birthday) = 1 - P(all different birthdays)
+```
+
+For n people:
+```math
+P(all different) = 365/365 × 364/365 × 363/365 × ... × (365-n+1)/365
+```
+
+Or more formally:
+```math
+P(all different) = ∏(i=0 to n-1) [(365-i)/365]
+```
+
+Therefore:
+```math
+P(at least one shared birthday) = 1 - ∏(i=0 to n-1) [(365-i)/365]
+```
+
+#### Implementation in Code
+
+```javascript
+const calculateExpectedProbability = (n) => {
+    if (n >= 365) return 100;
+
+    let probability = 1;
+    for (let i = 0; i < n; i++) {
+        probability *= (365 - i) / 365;
+    }
+
+    return (1 - probability) * 100;
+};
+```
+
+### Exact Birthday Matching (Including Year)
+
+When considering both day and year, the number of possible birthdays increases dramatically.
+
+#### Probability Space Expansion
+
+With a 75-year range (1950-2025):
+- Classic paradox: 365 possible birthdays
+- Exact matching: 365 × 75 = 27,375 possible birthdays
+
+This dramatically reduces the probability of finding a match.
+
+#### Empirical Calculation
+
+For simulation results:
+```math
+P(empirical) = Number of matches / Total simulations × 100
+```
+
+For both classic and exact matching:
+```javascript
+const probability = (matchCount / simulations) * 100;
+const exactProbability = (exactMatchCount / simulations) * 100;
+```
+
+### Why the Paradox Works
+
+The counterintuitive nature comes from the number of pairwise comparisons:
+
+For n people:
+```math
+Number of pairs = C(n,2) = n(n-1)/2
+```
+
+With 23 people:
+```math
+C(23,2) = 23×22/2 = 253 pairs
+```
+
+Each pair has 1/365 chance of matching, leading to:
+```math
+P(at least one match) ≈ 1 - (364/365)^253 ≈ 50.7%
+```
 
 ## Getting Started
 
@@ -53,86 +130,60 @@ npm start
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-## Usage
+## Deployment
 
-1. **Set Parameters**:
-   - Group Size: Number of people in each simulation (default: 23)
-   - Number of Simulations: How many test runs to perform (default: 1000)
+This project is configured for deployment as a static site on Render.com:
 
-2. **Run Simulation**:
-   - Click "Launch Simulation" to start
-   - Results appear automatically
+1. Connect your GitHub repository to Render
+2. Choose "Static Site"
+3. Build command: `npm install && npm run build`
+4. Publish directory: `build`
 
-3. **View Results**:
-   - Empirical probability based on your simulations
-   - Theoretical probability calculated mathematically
-   - Detailed view of the first 10 simulations
+## Implementation Details
 
-4. **Toggle Years**:
-   - Check "Show birth years" to see that only days matter
-   - Years are displayed for educational purposes only
+### Core Algorithm
 
-## Mathematical Background
+1. **Random Birthday Generation**
+   ```javascript
+   const birthday = Math.floor(Math.random() * 365);
+   const year = 1950 + Math.floor(Math.random() * 75);
+   ```
 
-The Birthday Paradox states that in a random group of 23 people, there's about a 50% probability that two people share the same birthday. This seems counterintuitive because 23 is such a small number compared to 365 days in a year.
+2. **Match Detection**
+   - Uses JavaScript `Set` for O(1) lookup
+   - Tracks both day-only and exact matches
+   - Counts matches across multiple simulations
 
-The theoretical probability is calculated as:
-```
-P(shared birthday) = 1 - P(all different birthdays)
-P(all different birthdays) = 365/365 × 364/365 × 363/365 × ... × (365-n+1)/365
-```
+3. **Probability Calculation**
+   - Empirical: Count matches / Total simulations
+   - Theoretical: Mathematical formula for classic paradox
 
-## Project Structure
+### Performance Optimizations
 
-```
-birthday-paradox/
-├── public/
-│   ├── index.html
-│   └── ...
-├── src/
-│   ├── App.jsx          # Main application component
-│   ├── index.js         # Entry point
-│   └── ...
-├── package.json
-└── README.md
-```
+- Uses `Set` for fast duplicate detection
+- Early exit when match is found
+- Limits detailed output to first 10 simulations
+
+## Tech Stack
+
+- React 19.1.0
+- Lucide React for icons
+- Native CSS-in-JS styling
 
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
-
-- Inspired by the classic probability theory problem
-- Created as an educational tool to demonstrate counterintuitive probability concepts
-- Built with React for interactive learning
+MIT License - feel free to use this project for educational purposes.
 
 ## Learn More
 
 - [Birthday Problem - Wikipedia](https://en.wikipedia.org/wiki/Birthday_problem)
+- [Understanding Probability](https://www.khanacademy.org/math/statistics-probability)
 - [React Documentation](https://reactjs.org/)
-- [Probability Theory Basics](https://www.khanacademy.org/math/statistics-probability/probability-library)
 
-## Available Scripts
+## Acknowledgments
 
-### `npm start`
-Runs the app in development mode at [http://localhost:3000](http://localhost:3000)
-
-### `npm test`
-Launches the test runner in interactive watch mode
-
-### `npm run build`
-Builds the app for production to the `build` folder
-
-### `npm run eject`
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Created as an educational tool to demonstrate probability concepts and the counterintuitive nature of the birthday paradox.
