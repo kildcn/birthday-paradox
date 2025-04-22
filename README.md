@@ -1,70 +1,138 @@
-# Getting Started with Create React App
+# Birthday Paradox Simulator
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+An interactive React application that demonstrates the famous Birthday Paradox - the counterintuitive probability theory that in a group of just 23 people, there's a 50% chance that two will share the same birthday.
 
-## Available Scripts
+## Demo
 
-In the project directory, you can run:
+The application allows users to:
+- Set the group size and number of simulations
+- Run interactive simulations to calculate probabilities
+- View detailed results with both empirical and theoretical probabilities
+- See the actual birthdays generated in each simulation
+- Toggle year display to demonstrate that only days matter, not birth years
 
-### `npm start`
+## Features
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Interactive simulation**: Adjust group size and simulation count
+- **Real-time results**: Compare empirical vs theoretical probabilities
+- **Detailed visualization**: See specific dates with matching birthdays highlighted
+- **Year toggle**: Demonstrate that birth years don't affect the paradox
+- **Responsive design**: Works on desktop and mobile devices
+- **Clear highlighting**: Matching birthdays are visually highlighted in red
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Tech Stack
 
-### `npm test`
+- React 19.1.0
+- Lucide React for icons
+- Native CSS-in-JS styling
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Getting Started
 
-### `npm run build`
+### Prerequisites
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- Node.js (v14 or higher)
+- npm or yarn package manager
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Installation
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/birthday-paradox.git
+cd birthday-paradox
+```
 
-### `npm run eject`
+2. Install dependencies:
+```bash
+npm install
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+3. Start the development server:
+```bash
+npm start
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Usage
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+1. **Set Parameters**:
+   - Group Size: Number of people in each simulation (default: 23)
+   - Number of Simulations: How many test runs to perform (default: 1000)
+
+2. **Run Simulation**:
+   - Click "Launch Simulation" to start
+   - Results appear automatically
+
+3. **View Results**:
+   - Empirical probability based on your simulations
+   - Theoretical probability calculated mathematically
+   - Detailed view of the first 10 simulations
+
+4. **Toggle Years**:
+   - Check "Show birth years" to see that only days matter
+   - Years are displayed for educational purposes only
+
+## Mathematical Background
+
+The Birthday Paradox states that in a random group of 23 people, there's about a 50% probability that two people share the same birthday. This seems counterintuitive because 23 is such a small number compared to 365 days in a year.
+
+The theoretical probability is calculated as:
+```
+P(shared birthday) = 1 - P(all different birthdays)
+P(all different birthdays) = 365/365 × 364/365 × 363/365 × ... × (365-n+1)/365
+```
+
+## Project Structure
+
+```
+birthday-paradox/
+├── public/
+│   ├── index.html
+│   └── ...
+├── src/
+│   ├── App.jsx          # Main application component
+│   ├── index.js         # Entry point
+│   └── ...
+├── package.json
+└── README.md
+```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- Inspired by the classic probability theory problem
+- Created as an educational tool to demonstrate counterintuitive probability concepts
+- Built with React for interactive learning
 
 ## Learn More
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+- [Birthday Problem - Wikipedia](https://en.wikipedia.org/wiki/Birthday_problem)
+- [React Documentation](https://reactjs.org/)
+- [Probability Theory Basics](https://www.khanacademy.org/math/statistics-probability/probability-library)
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Available Scripts
 
-### Code Splitting
+### `npm start`
+Runs the app in development mode at [http://localhost:3000](http://localhost:3000)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### `npm test`
+Launches the test runner in interactive watch mode
 
-### Analyzing the Bundle Size
+### `npm run build`
+Builds the app for production to the `build` folder
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+### `npm run eject`
+**Note: this is a one-way operation. Once you `eject`, you can't go back!**
